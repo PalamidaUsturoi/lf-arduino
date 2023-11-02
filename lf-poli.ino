@@ -13,8 +13,8 @@ const int S[NO_SENSORS] = { A4, A3, A5, A2, A6, A1, A7, A0 };
 // A6 and A2 are the center sensors, A5 and A1 following
 
 // -----Errors_and_Coef-----
-const float kp_f = 2; // 1
-const float kd_f = 6.25; // 5
+const float kp_f = 2; // 2
+const float kd_f = 5.5; // 6.25
 const float ki_f = 0.00; // 0.02
 const float kp_c = 4;
 const float kd_c = 40;
@@ -23,7 +23,7 @@ float err_old = 0;
 float sum_err = 0;
 const int threshold = 20;
 const int threshold_getBack = 60;
-const int threshold_err = 10;
+// const int threshold_err = 10;
 
 // -----Push_Buttons-----
 const int BUTTON1 = 8;
@@ -32,12 +32,12 @@ const int BUTTON2 = 7;
 float value[NO_SENSORS];
 const int speed = 90;
 const int speedCalibration = 100;
-const int speedOneWheel = 80;
+const int speedOneWheel = 90;
 
 bool isRunning = false;
 bool isCalibrating = false;
 bool isDoing90 = false;
-int calibrationTime = 0; // 700
+// int calibrationTime = 0; // 700
 
 const String compensatingDir = "left";
 
@@ -76,12 +76,12 @@ void loop() {
 
   if ( isDoing90 ) {
     if ( compensatingDir == "left" ) {
-      moveMotor("left", -80);
-      moveMotor("right", -80);
+      moveMotor("left", -speedOneWheel);
+      moveMotor("right", -speedOneWheel);
     }
     else {
-      moveMotor("right", 80);
-      moveMotor("left", 80);
+      moveMotor("right", speedOneWheel);
+      moveMotor("left", speedOneWheel);
     }
     
     value[2] = analogRead(S[2]);
@@ -100,15 +100,16 @@ void loop() {
 
     if ( (compensatingDir == "left" && value[NO_SENSORS - 3] >= 100 - threshold_getBack) || 
          (compensatingDir == "right" && value[2] >= 100 - threshold_getBack) ) {
-      if ( compensatingDir == "left" ) {
-        moveMotor("left", 80);
-        moveMotor("right", 80);
-      }
-      else {
-        moveMotor("right", -80);
-        moveMotor("left", -80);
-      }
-      delay(100);
+      // if ( compensatingDir == "left" ) {
+      //   moveMotor("left", speedOneWheel);
+      //   moveMotor("right", speedOneWheel);
+      // }
+      // else {
+      //   moveMotor("right", -speedOneWheel);
+      //   moveMotor("left", -speedOneWheel);
+      // }
+      // delay(100);
+
       // moveMotor("left", 0);
       // moveMotor("right", 0);
       // delay(50); // 50
@@ -116,35 +117,35 @@ void loop() {
       isRunning = true;
       isCalibrating = false;
       // delay(2000);
-      int last = millis();
-      sum_err = err_old = 0;
-      while ( millis() - last < calibrationTime ) {
-        for ( int i = 0; i < NO_SENSORS; i ++ ) {
-          value[i] = analogRead(S[i]);
-          if ( value[i] < min_val[i] )
-            min_val[i] = value[i];
-          if ( value[i] > max_val[i] )
-            max_val[i] = value[i];
-          value[i] = mapf(value[i], min_val[i], max_val[i], 0, 100);
-        }
+      // int last = millis();
+      // sum_err = err_old = 0;
+      // while ( millis() - last < calibrationTime ) {
+      //   for ( int i = 0; i < NO_SENSORS; i ++ ) {
+      //     value[i] = analogRead(S[i]);
+      //     if ( value[i] < min_val[i] )
+      //       min_val[i] = value[i];
+      //     if ( value[i] > max_val[i] )
+      //       max_val[i] = value[i];
+      //     value[i] = mapf(value[i], min_val[i], max_val[i], 0, 100);
+      //   }
 
-        float err;
-        err = 0;
-        for ( int i = 1; i < PAIRS; i ++ )
-          err += (value[NO_SENSORS - i - 1] - value[i]) / PAIRS;
+      //   float err;
+      //   err = 0;
+      //   for ( int i = 1; i < PAIRS; i ++ )
+      //     err += (value[NO_SENSORS - i - 1] - value[i]) / PAIRS;
 
-        float p = kp_c * err;
-        float d = kd_c * (err - err_old);
-        float i_cmp = ki_c * sum_err;
-        err_old = err;
-        sum_err += err;
+      //   float p = kp_c * err;
+      //   float d = kd_c * (err - err_old);
+      //   float i_cmp = ki_c * sum_err;
+      //   err_old = err;
+      //   sum_err += err;
 
-        int speedLeft = speedCalibration + (p + d + i_cmp);
-        int speedRight = speedCalibration - (p + d + i_cmp);
+      //   int speedLeft = speedCalibration + (p + d + i_cmp);
+      //   int speedRight = speedCalibration - (p + d + i_cmp);
 
-        moveMotor("left", speedLeft);
-        moveMotor("right", -speedRight);
-      }
+      //   moveMotor("left", speedLeft);
+      //   moveMotor("right", -speedRight);
+      // }
       moveMotor("left", 0);
       moveMotor("right", 0);
       // delay(2000);
@@ -175,8 +176,8 @@ void loop() {
       err += (value[NO_SENSORS - i - 1] - value[i]) / PAIRS;
 
     if ( (value[NO_SENSORS - 1] >= 100 - threshold) || (value[0] >= 100 - threshold) ) {
-      moveMotor("left", 80);
-      moveMotor("right", -80);
+      moveMotor("left", speedOneWheel);
+      moveMotor("right", -speedOneWheel);
       delay(20); // merem in fata pt spin
       // moveMotor("left", 0);
       // moveMotor("right", 0);
